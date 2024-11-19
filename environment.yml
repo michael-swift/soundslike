@@ -1,0 +1,19 @@
+name: sounds
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - numpy>=1.20.0
+  - matplotlib>=3.5.0
+  - seaborn>=0.11.0
+  - jupyter
+  - pytest>=7.0.0
+  - pytest-cov>=3.0.0
+  - black>=22.0.0
+  - pip>=21.0.0
+  - pip:
+    - sound-machine>=0.1.0
+
+variables:
+  PYTHONPATH: . 
