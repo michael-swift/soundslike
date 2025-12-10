@@ -11,9 +11,8 @@ dependencies:
   - pytest>=7.0.0
   - pytest-cov>=3.0.0
   - black>=22.0.0
+  - scipy>=1.7.0
   - pip>=21.0.0
-  - pip:
-    - sound-machine>=0.1.0
 
 variables:
   PYTHONPATH: . 

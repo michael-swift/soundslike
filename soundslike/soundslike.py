@@ -4,9 +4,9 @@ import seaborn as sns
 import logging
 from pathlib import Path
 from datetime import datetime
-from sound.tone import SineWave
-from sound.signal import Signal, MixSignal
-from sound.envelope import ADSR
+from .sound.tone import SineWave
+from .sound.signal import Signal, MixSignal
+from .sound.envelope import ADSR
 
 # Set up logging
 logging.basicConfig(

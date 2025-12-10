@@ -32,6 +32,5 @@ def test_play_normal(ps):
 def test_frequency_scaling(ps):
     # Test that frequencies are properly scaled to audible range
     freq_array = np.array([1, 10, 25000])
-    num_samples = 3
-    ps.play_sound(freq_array, num_samples)
-    # Should not raise any errors 
+    ps.play_distribution(freq_array, save=False)
+    # Should not raise any errors

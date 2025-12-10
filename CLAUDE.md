@@ -14,7 +14,12 @@
 soundslike/
 ├── soundslike/              # Main package
 │   ├── __init__.py          # Exports ProbabilitySounds class
-│   └── soundslike.py        # Core implementation
+│   ├── soundslike.py        # Core implementation
+│   └── sound/               # Audio synthesis module
+│       ├── __init__.py      # Exports SineWave, Signal, MixSignal, ADSR
+│       ├── tone.py          # SineWave generator
+│       ├── signal.py        # Signal mixing and WAV output
+│       └── envelope.py      # ADSR envelope generator
 ├── tests/
 │   └── test_soundslike.py   # Pytest test suite
 ├── examples/
@@ -22,6 +27,7 @@ soundslike/
 │   ├── POC_nb/cs109.ipynb   # Proof of concept notebook
 │   ├── 2024-08-04-sound_prob.md  # Blog post explaining concepts
 │   └── sound_output/        # Generated audio/image files
+├── pyproject.toml           # Modern Python project config
 ├── environment.yml          # Conda environment specification
 ├── setup.py                 # Package installation config
 ├── README.md                # Project readme
@@ -48,12 +54,21 @@ ps = ProbabilitySounds(sample_rate=44100, output_dir='output')
 - `play_distribution(dist_samples, duration, save, prefix, title)` - Play any array of frequencies
 - `plot_distribution(dist_array, title, save)` - Visualize distribution as histogram
 
+### Audio Module: `soundslike.sound`
+
+A built-in audio synthesis module using numpy and scipy:
+
+- `SineWave(frequency)` - Generate sine waves at specified frequency
+- `MixSignal(*sources)` - Mix multiple audio sources together
+- `ADSR(attack, decay, sustain, sustain_level, release)` - Envelope generator
+- `Signal` - Audio container with WAV file output
+
 **Audio Pipeline:**
 1. Generate frequency samples from distribution (numpy)
 2. Clip frequencies to audible range (20Hz - 20kHz)
-3. Create sine waves for each frequency (sound-machine library)
+3. Create sine waves for each frequency
 4. Mix signals and apply ADSR envelope
-5. Play audio and save to WAV file
+5. Save to WAV file (via scipy.io.wavfile)
 
 ## Development Setup
 
@@ -70,7 +85,7 @@ conda activate sounds
 - `numpy>=1.20.0` - Numerical operations
 - `matplotlib>=3.5.0` - Plotting
 - `seaborn>=0.11.0` - Statistical visualization
-- `sound-machine>=0.1.0` - Audio synthesis (SineWave, Signal, ADSR)
+- `scipy>=1.7.0` - Audio file I/O (WAV format)
 
 **Development:**
 - `pytest>=7.0.0` - Testing framework
@@ -89,9 +104,8 @@ pip install -e .
 ### Running Tests
 
 ```bash
-pytest tests/
-pytest tests/ -v                    # Verbose output
-pytest tests/ --cov=soundslike      # With coverage
+python -m pytest tests/ -v              # Verbose output
+python -m pytest tests/ --cov=soundslike  # With coverage
 ```
 
 ### Code Formatting
@@ -120,7 +134,7 @@ jupyter notebook examples/demo.ipynb
 - Log format: `%(asctime)s - %(name)s - %(levelname)s - %(message)s`
 
 ### File Output
-- Audio files saved as WAV format
+- Audio files saved as WAV format (16-bit PCM)
 - Plots saved as PNG format
 - Files are timestamped: `{prefix}_{YYYYMMDD_HHMMSS}.{ext}`
 - Default output directory: `output/`
@@ -135,6 +149,7 @@ jupyter notebook examples/demo.ipynb
 - Tests use `pytest` with fixtures for temporary directories
 - Use `tempfile.TemporaryDirectory` for test output isolation
 - Test files should be prefixed with `test_`
+- Run tests with `python -m pytest` to ensure correct environment
 - Current test file: `tests/test_soundslike.py`
 
 ## Common Tasks
@@ -157,12 +172,11 @@ The `ADSR` envelope in `play_distribution()` controls the sound shape:
 
 ## Known Issues / Notes
 
-1. The test `test_frequency_scaling` references a method `ps.play_sound()` that doesn't exist in the current implementation (should be `play_distribution`)
-2. The `setup.py` lists `pippi` as a dependency but `environment.yml` uses `sound-machine` - these may be related libraries
-3. Audio playback requires a working audio output device
+1. Audio playback (`signal.play()`) is a no-op in headless environments
+2. The pyproject.toml includes `--cov` in pytest addopts; use `python -m pytest` for proper environment
 
 ## External Resources
 
 - NumPy random distributions: https://numpy.org/doc/stable/reference/random/
-- Sound-machine library for audio synthesis
-- Seaborn for statistical visualizations
+- SciPy WAV I/O: https://docs.scipy.org/doc/scipy/reference/io.html
+- Seaborn for statistical visualizations: https://seaborn.pydata.org/

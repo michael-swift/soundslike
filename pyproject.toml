@@ -10,13 +10,13 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [
-    {name = "Your Name", email = "your.email@example.com"},
+    {name = "Michael Swift", email = "swiftmichael26@gmail.com"},
 ]
 dependencies = [
     "numpy>=1.20.0",
     "matplotlib>=3.5.0",
     "seaborn>=0.11.0",
-    "sound-machine>=0.1.0",
+    "scipy>=1.7.0",
 ]
 
 [project.optional-dependencies]
