@@ -64,6 +64,32 @@ class Signal:
         # Could integrate with simpleaudio or pyaudio if available
         pass
 
+    def to_audio(self):
+        """
+        Return an IPython Audio widget for notebook playback.
+
+        Returns:
+            IPython.display.Audio object that can be displayed in notebooks
+        """
+        try:
+            from IPython.display import Audio
+        except ImportError:
+            raise ImportError("IPython is required for notebook audio playback. "
+                            "Install with: pip install ipython")
+
+        # Normalize samples to [-1, 1] range for Audio widget
+        normalized = self.samples / (np.max(np.abs(self.samples)) + 1e-10)
+        return Audio(normalized, rate=self.sample_rate)
+
+    def to_numpy(self) -> np.ndarray:
+        """
+        Return normalized audio samples as numpy array.
+
+        Returns:
+            numpy array of audio samples normalized to [-1, 1]
+        """
+        return self.samples / (np.max(np.abs(self.samples)) + 1e-10)
+
 
 class MixSignal(Signal):
     """Mix multiple signals together."""

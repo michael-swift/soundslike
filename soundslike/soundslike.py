@@ -136,7 +136,7 @@ class ProbabilitySounds:
 
     def play_uniform(self, low=220, high=880, num_samples=100):
         """Play and visualize a uniform distribution of frequencies.
-        
+
         Args:
             low (float): Minimum frequency in Hz
             high (float): Maximum frequency in Hz
@@ -149,3 +149,110 @@ class ProbabilitySounds:
             prefix='uniform',
             title=f'Uniform Distribution ({low}-{high}Hz)'
         )
+
+    # ==================== Notebook-friendly methods ====================
+
+    def sonify(self, freq_samples, duration=1.0):
+        """Convert frequency samples to an audio Signal.
+
+        Args:
+            freq_samples (np.ndarray): Array of frequencies in Hz
+            duration (float): Duration in seconds (default 1.0)
+
+        Returns:
+            Signal: Audio signal that can be played or converted to IPython Audio
+        """
+        # Ensure frequencies are in audible range
+        freq_array = np.clip(freq_samples, 20, 20000)
+
+        # Create sine waves for each frequency
+        signals = [SineWave(freq, self.sample_rate) for freq in freq_array]
+
+        # Mix signals and apply envelope
+        mixed = MixSignal(*signals, sample_rate=self.sample_rate)
+        env = ADSR(
+            attack=0.05,
+            decay=0.1,
+            sustain=duration - 0.25,
+            sustain_level=0.7,
+            release=0.1,
+            sample_rate=self.sample_rate
+        )
+        return mixed * env
+
+    def sonify_normal(self, mean=440, std=50, num_samples=100, duration=1.0):
+        """Create audio from a normal distribution.
+
+        Args:
+            mean (float): Mean frequency in Hz (default 440, A4 note)
+            std (float): Standard deviation in Hz
+            num_samples (int): Number of frequency samples
+            duration (float): Duration in seconds
+
+        Returns:
+            Signal: Audio signal
+        """
+        samples = np.random.normal(mean, std, num_samples)
+        return self.sonify(samples, duration)
+
+    def sonify_beta(self, a=2, b=2, freq_range=(220, 880), num_samples=100, duration=1.0):
+        """Create audio from a beta distribution.
+
+        Args:
+            a (float): Alpha parameter
+            b (float): Beta parameter
+            freq_range (tuple): (min_freq, max_freq) in Hz
+            num_samples (int): Number of frequency samples
+            duration (float): Duration in seconds
+
+        Returns:
+            Signal: Audio signal
+        """
+        samples = np.random.beta(a, b, num_samples)
+        min_freq, max_freq = freq_range
+        samples = samples * (max_freq - min_freq) + min_freq
+        return self.sonify(samples, duration)
+
+    def sonify_uniform(self, low=220, high=880, num_samples=100, duration=1.0):
+        """Create audio from a uniform distribution.
+
+        Args:
+            low (float): Minimum frequency in Hz
+            high (float): Maximum frequency in Hz
+            num_samples (int): Number of frequency samples
+            duration (float): Duration in seconds
+
+        Returns:
+            Signal: Audio signal
+        """
+        samples = np.random.uniform(low, high, num_samples)
+        return self.sonify(samples, duration)
+
+    def sonify_exponential(self, scale=100, base_freq=200, num_samples=100, duration=1.0):
+        """Create audio from an exponential distribution.
+
+        Args:
+            scale (float): Scale parameter (1/lambda)
+            base_freq (float): Base frequency to add to samples
+            num_samples (int): Number of frequency samples
+            duration (float): Duration in seconds
+
+        Returns:
+            Signal: Audio signal
+        """
+        samples = np.random.exponential(scale, num_samples) + base_freq
+        return self.sonify(samples, duration)
+
+    def sonify_poisson(self, lam=440, num_samples=100, duration=1.0):
+        """Create audio from a Poisson distribution.
+
+        Args:
+            lam (float): Expected value (lambda), used as center frequency
+            num_samples (int): Number of frequency samples
+            duration (float): Duration in seconds
+
+        Returns:
+            Signal: Audio signal
+        """
+        samples = np.random.poisson(lam, num_samples).astype(float)
+        return self.sonify(samples, duration)

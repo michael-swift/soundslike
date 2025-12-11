@@ -47,12 +47,25 @@ from soundslike import ProbabilitySounds
 ps = ProbabilitySounds(sample_rate=44100, output_dir='output')
 ```
 
-**Key Methods:**
+**Legacy Methods (play and save automatically):**
 - `play_normal(mean, std, num_samples)` - Sonify a normal/Gaussian distribution
 - `play_beta(a, b, freq_range, num_samples)` - Sonify a beta distribution
 - `play_uniform(low, high, num_samples)` - Sonify a uniform distribution
 - `play_distribution(dist_samples, duration, save, prefix, title)` - Play any array of frequencies
 - `plot_distribution(dist_array, title, save)` - Visualize distribution as histogram
+
+**Notebook-friendly Methods (return Signal objects):**
+- `sonify(freq_samples, duration)` - Convert any frequency array to audio
+- `sonify_normal(mean, std, num_samples, duration)` - Normal distribution
+- `sonify_uniform(low, high, num_samples, duration)` - Uniform distribution
+- `sonify_beta(a, b, freq_range, num_samples, duration)` - Beta distribution
+- `sonify_exponential(scale, base_freq, num_samples, duration)` - Exponential distribution
+- `sonify_poisson(lam, num_samples, duration)` - Poisson distribution
+
+**Signal Object Methods:**
+- `signal.to_audio()` - Returns IPython Audio widget for notebook playback
+- `signal.write(filename)` - Save to WAV file
+- `signal.to_numpy()` - Get raw samples as numpy array
 
 ### Audio Module: `soundslike.sound`
 
