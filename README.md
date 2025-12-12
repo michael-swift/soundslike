@@ -2,6 +2,8 @@
 
 A Python library for **sonifying probability distributions** - hear what your data sounds like!
 
+**[Try the Live Demo](https://michael-swift.github.io/soundslike/)** - No installation required!
+
 SoundsLike converts probability distributions into audio, mapping statistical values to frequencies. This provides an intuitive, auditory way to understand distributions: tight distributions sound focused, wide distributions sound diffuse, and skewed distributions emphasize certain frequency ranges.
 
 ## Installation
@@ -63,15 +65,26 @@ ps.sonify_poisson(lam=440, num_samples=100)
 ps.sonify(my_frequency_array, duration=1.0)
 ```
 
-## Interactive Demo
+## Interactive Demos
 
-The best way to experience SoundsLike is through the interactive demo notebook:
+### Web Demo (Recommended)
+
+The easiest way to experience SoundsLike is through the **[live web demo](https://michael-swift.github.io/soundslike/)** - works in any browser, no installation required!
+
+Features:
+- Select from Normal, Uniform, Beta, and Exponential distributions
+- Adjust parameters with sliders and hear the results instantly
+- See the frequency histogram update in real-time
+
+### Jupyter Notebook
+
+For a more in-depth exploration with Python:
 
 ```bash
 jupyter notebook examples/demo.ipynb
 ```
 
-The demo includes:
+The notebook demo includes:
 - Comparing tight vs wide normal distributions
 - Hearing how beta distribution shape affects sound
 - Understanding sample size effects
