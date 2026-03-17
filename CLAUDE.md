@@ -1,8 +1,8 @@
-# CLAUDE.md - SoundsLike Repository Guide
+# CLAUDE.md - Sound Reasoning Repository Guide
 
 ## Project Overview
 
-**SoundsLike** is a Python library for sonifying probability distributions and statistical concepts. It converts mathematical distributions into audible sound, allowing users to "hear" probability distributions as audio signals where frequencies map to distribution values.
+**Sound Reasoning** is a Python library for sonifying probability distributions and statistical concepts. It converts mathematical distributions into audible sound, allowing users to "hear" probability distributions as audio signals where frequencies map to distribution values.
 
 **Author:** Michael Swift
 **License:** MIT

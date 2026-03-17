@@ -15,7 +15,7 @@ setup(
     description="A library for sonifying probability distributions",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/michael-swift/soundslike",
+    url="https://github.com/michael-swift/sound-reasoning",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Science/Research",

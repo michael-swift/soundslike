@@ -1,17 +1,17 @@
-# SoundsLike
+# Sound Reasoning
 
 A Python library for **sonifying probability distributions** - hear what your data sounds like!
 
-**[Try the Live Demo](https://michael-swift.github.io/soundslike/)** - No installation required!
+**[Try the Live Demo](https://michael-swift.github.io/sound-reasoning/)** - No installation required!
 
-SoundsLike converts probability distributions into audio, mapping statistical values to frequencies. This provides an intuitive, auditory way to understand distributions: tight distributions sound focused, wide distributions sound diffuse, and skewed distributions emphasize certain frequency ranges.
+Sound Reasoning converts probability distributions into audio, mapping statistical values to frequencies. This provides an intuitive, auditory way to understand distributions: tight distributions sound focused, wide distributions sound diffuse, and skewed distributions emphasize certain frequency ranges.
 
 ## Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/michael-swift/soundslike.git
-cd soundslike
+git clone https://github.com/michael-swift/sound-reasoning.git
+cd sound-reasoning
 
 # Install with pip
 pip install -e .
@@ -69,7 +69,7 @@ ps.sonify(my_frequency_array, duration=1.0)
 
 ### Web Demo (Recommended)
 
-The easiest way to experience SoundsLike is through the **[live web demo](https://michael-swift.github.io/soundslike/)** - works in any browser, no installation required!
+The easiest way to experience Sound Reasoning is through the **[live web demo](https://michael-swift.github.io/sound-reasoning/)** - works in any browser, no installation required!
 
 Features:
 - Select from Normal, Uniform, Beta, and Exponential distributions

@@ -142,7 +142,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="header">
-        <h1>SoundsLike</h1>
+        <h1>Sound Reasoning</h1>
         <p className="tagline">Hear what probability distributions sound like</p>
       </header>
 
@@ -233,7 +233,7 @@ export default function App() {
       <footer className="footer">
         <p>
           Built with React + Web Audio API |{' '}
-          <a href="https://github.com/michael-swift/soundslike" target="_blank" rel="noopener noreferrer">
+          <a href="https://github.com/michael-swift/sound-reasoning" target="_blank" rel="noopener noreferrer">
             GitHub
           </a>
         </p>

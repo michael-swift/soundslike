@@ -1,6 +1,6 @@
-# SoundsLike Web Demo
+# Sound Reasoning Web Demo
 
-Interactive web demo for the SoundsLike probability sonification library.
+Interactive web demo for the Sound Reasoning probability sonification library.
 
 ## Development
 
