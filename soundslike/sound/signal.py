@@ -26,6 +26,18 @@ class Signal:
         duration = len(self.samples) / self.sample_rate
         return f"Signal(duration={duration:.2f}s, sample_rate={self.sample_rate})"
 
+    def __len__(self) -> int:
+        """Return number of samples."""
+        return len(self.samples)
+
+    def __add__(self, other: 'Signal') -> 'Signal':
+        """Concatenate two signals."""
+        if not isinstance(other, Signal):
+            raise TypeError(f"Cannot concatenate Signal with {type(other)}")
+        if self.sample_rate != other.sample_rate:
+            raise ValueError("Sample rates must match for concatenation")
+        return Signal(np.concatenate([self.samples, other.samples]), self.sample_rate)
+
     def __mul__(self, other: Union['Signal', ADSR, np.ndarray]) -> 'Signal':
         """Multiply signal by another signal, envelope, or array."""
         if isinstance(other, Signal):

@@ -1,12 +1,23 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 import logging
 from pathlib import Path
 from datetime import datetime
 from .sound.tone import SineWave
 from .sound.signal import Signal, MixSignal
 from .sound.envelope import ADSR
+
+# Lazy imports for plotting (speeds up import time)
+plt = None
+sns = None
+
+def _ensure_plotting():
+    """Lazy-load matplotlib and seaborn."""
+    global plt, sns
+    if plt is None:
+        import matplotlib.pyplot as _plt
+        import seaborn as _sns
+        plt = _plt
+        sns = _sns
 
 __all__ = ['ProbabilitySounds']
 
@@ -81,6 +92,7 @@ class ProbabilitySounds:
         
     def plot_distribution(self, dist_array, title=None, save=True):
         """Plot and optionally save a distribution histogram."""
+        _ensure_plotting()
         plt.figure(figsize=(10, 6))
         sns.histplot(dist_array, bins=30, kde=True)
         
@@ -152,12 +164,13 @@ class ProbabilitySounds:
 
     # ==================== Notebook-friendly methods ====================
 
-    def sonify(self, freq_samples, duration=1.0):
+    def sonify(self, freq_samples, duration=1.0, gain=1.0):
         """Convert frequency samples to an audio Signal.
 
         Args:
             freq_samples (np.ndarray): Array of frequencies in Hz
             duration (float): Duration in seconds (default 1.0)
+            gain (float): Volume multiplier (default 1.0)
 
         Returns:
             Signal: Audio signal that can be played or converted to IPython Audio
@@ -174,7 +187,7 @@ class ProbabilitySounds:
             attack=0.05,
             decay=0.1,
             sustain=duration - 0.25,
-            sustain_level=0.7,
+            sustain_level=0.7 * gain,
             release=0.1,
             sample_rate=self.sample_rate
         )
@@ -272,3 +285,36 @@ class ProbabilitySounds:
         """
         samples = self.rng.gamma(shape, scale, num_samples) + base_freq
         return self.sonify(samples, duration)
+
+    def sonify_binomial(self, n=100, p=0.5, base_freq=200, num_samples=100, duration=1.0):
+        """Create audio from a binomial distribution.
+
+        Args:
+            n (int): Number of trials
+            p (float): Probability of success per trial
+            base_freq (float): Base frequency to add to samples
+            num_samples (int): Number of frequency samples
+            duration (float): Duration in seconds
+
+        Returns:
+            Signal: Audio signal
+        """
+        samples = self.rng.binomial(n, p, num_samples).astype(float) + base_freq
+        return self.sonify(samples, duration)
+
+    def chord(self, frequencies, duration=1.0, gain=1.0):
+        """Create a chord from specific frequencies.
+
+        Args:
+            frequencies (list): List of frequencies in Hz
+            duration (float): Duration in seconds
+            gain (float): Volume multiplier
+
+        Returns:
+            Signal: Audio signal
+
+        Example:
+            # A major chord (A4, C#5, E5)
+            ps.chord([440, 554.37, 659.25])
+        """
+        return self.sonify(np.array(frequencies), duration, gain)
