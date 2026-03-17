@@ -22,6 +22,10 @@ class Signal:
         self.samples = samples
         self.sample_rate = sample_rate
 
+    def __repr__(self) -> str:
+        duration = len(self.samples) / self.sample_rate
+        return f"Signal(duration={duration:.2f}s, sample_rate={self.sample_rate})"
+
     def __mul__(self, other: Union['Signal', ADSR, np.ndarray]) -> 'Signal':
         """Multiply signal by another signal, envelope, or array."""
         if isinstance(other, Signal):

@@ -8,28 +8,28 @@ from .sound.tone import SineWave
 from .sound.signal import Signal, MixSignal
 from .sound.envelope import ADSR
 
-# Set up logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('soundslike.log'),
-        logging.StreamHandler()
-    ]
-)
+__all__ = ['ProbabilitySounds']
+
+# Audible frequency range
+MIN_FREQ = 20
+MAX_FREQ = 20000
+
+# Module logger - users can configure via logging.getLogger('soundslike')
 logger = logging.getLogger(__name__)
 
 class ProbabilitySounds:
-    def __init__(self, sample_rate=44100, output_dir='output'):
+    def __init__(self, sample_rate=44100, output_dir='output', seed=None):
         """Initialize ProbabilitySounds with sample rate and output directory.
-        
+
         Args:
             sample_rate (int): Audio sample rate in Hz
             output_dir (str): Directory to save output files
+            seed (int, optional): Random seed for reproducibility
         """
         self.sample_rate = sample_rate
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
+        self.rng = np.random.default_rng(seed)
         logger.info(f"Initialized ProbabilitySounds with sample_rate={sample_rate}")
         
     def _generate_filename(self, prefix):
@@ -49,8 +49,8 @@ class ProbabilitySounds:
         """
         logger.info(f"Playing distribution with {len(dist_samples)} samples")
         
-        # Ensure frequencies are in audible range (20Hz - 20000Hz)
-        freq_array = np.clip(dist_samples, 20, 20000)
+        # Ensure frequencies are in audible range
+        freq_array = np.clip(dist_samples, MIN_FREQ, MAX_FREQ)
         logger.info(f"Frequency range: {freq_array.min():.1f}Hz - {freq_array.max():.1f}Hz")
         
         # Create sine waves for each frequency
@@ -106,7 +106,7 @@ class ProbabilitySounds:
             num_samples (int): Number of samples to generate
         """
         logger.info(f"Generating normal distribution: mean={mean}Hz, std={std}Hz")
-        samples = np.random.normal(mean, std, num_samples)
+        samples = self.rng.normal(mean, std, num_samples)
         self.play_distribution(
             samples, 
             prefix='normal',
@@ -123,7 +123,7 @@ class ProbabilitySounds:
             num_samples (int): Number of samples to generate
         """
         logger.info(f"Generating beta distribution: a={a}, b={b}")
-        samples = np.random.beta(a, b, num_samples)
+        samples = self.rng.beta(a, b, num_samples)
         # Scale beta (0-1) to frequency range
         min_freq, max_freq = freq_range
         samples = samples * (max_freq - min_freq) + min_freq
@@ -143,7 +143,7 @@ class ProbabilitySounds:
             num_samples (int): Number of samples to generate
         """
         logger.info(f"Generating uniform distribution: range={low}-{high}Hz")
-        samples = np.random.uniform(low, high, num_samples)
+        samples = self.rng.uniform(low, high, num_samples)
         self.play_distribution(
             samples,
             prefix='uniform',
@@ -163,7 +163,7 @@ class ProbabilitySounds:
             Signal: Audio signal that can be played or converted to IPython Audio
         """
         # Ensure frequencies are in audible range
-        freq_array = np.clip(freq_samples, 20, 20000)
+        freq_array = np.clip(freq_samples, MIN_FREQ, MAX_FREQ)
 
         # Create sine waves for each frequency
         signals = [SineWave(freq, self.sample_rate) for freq in freq_array]
@@ -192,7 +192,7 @@ class ProbabilitySounds:
         Returns:
             Signal: Audio signal
         """
-        samples = np.random.normal(mean, std, num_samples)
+        samples = self.rng.normal(mean, std, num_samples)
         return self.sonify(samples, duration)
 
     def sonify_beta(self, a=2, b=2, freq_range=(220, 880), num_samples=100, duration=1.0):
@@ -208,7 +208,7 @@ class ProbabilitySounds:
         Returns:
             Signal: Audio signal
         """
-        samples = np.random.beta(a, b, num_samples)
+        samples = self.rng.beta(a, b, num_samples)
         min_freq, max_freq = freq_range
         samples = samples * (max_freq - min_freq) + min_freq
         return self.sonify(samples, duration)
@@ -225,7 +225,7 @@ class ProbabilitySounds:
         Returns:
             Signal: Audio signal
         """
-        samples = np.random.uniform(low, high, num_samples)
+        samples = self.rng.uniform(low, high, num_samples)
         return self.sonify(samples, duration)
 
     def sonify_exponential(self, scale=100, base_freq=200, num_samples=100, duration=1.0):
@@ -240,7 +240,7 @@ class ProbabilitySounds:
         Returns:
             Signal: Audio signal
         """
-        samples = np.random.exponential(scale, num_samples) + base_freq
+        samples = self.rng.exponential(scale, num_samples) + base_freq
         return self.sonify(samples, duration)
 
     def sonify_poisson(self, lam=440, num_samples=100, duration=1.0):
@@ -254,5 +254,21 @@ class ProbabilitySounds:
         Returns:
             Signal: Audio signal
         """
-        samples = np.random.poisson(lam, num_samples).astype(float)
+        samples = self.rng.poisson(lam, num_samples).astype(float)
+        return self.sonify(samples, duration)
+
+    def sonify_gamma(self, shape=2.0, scale=100, base_freq=200, num_samples=100, duration=1.0):
+        """Create audio from a gamma distribution.
+
+        Args:
+            shape (float): Shape parameter (k)
+            scale (float): Scale parameter (theta)
+            base_freq (float): Base frequency to add to samples
+            num_samples (int): Number of frequency samples
+            duration (float): Duration in seconds
+
+        Returns:
+            Signal: Audio signal
+        """
+        samples = self.rng.gamma(shape, scale, num_samples) + base_freq
         return self.sonify(samples, duration)
