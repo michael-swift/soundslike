@@ -302,19 +302,126 @@ class ProbabilitySounds:
         samples = self.rng.binomial(n, p, num_samples).astype(float) + base_freq
         return self.sonify(samples, duration)
 
-    def chord(self, frequencies, duration=1.0, gain=1.0):
-        """Create a chord from specific frequencies.
+    def sonify_scipy(self, dist, freq_range=(220, 880), num_samples=100, duration=1.0):
+        """Create audio from any scipy.stats distribution.
 
         Args:
-            frequencies (list): List of frequencies in Hz
+            dist: A scipy.stats distribution object (frozen or unfrozen)
+            freq_range (tuple): (min_freq, max_freq) to map distribution to
+            num_samples (int): Number of frequency samples
             duration (float): Duration in seconds
-            gain (float): Volume multiplier
 
         Returns:
             Signal: Audio signal
 
         Example:
-            # A major chord (A4, C#5, E5)
-            ps.chord([440, 554.37, 659.25])
+            from scipy import stats
+            ps.sonify_scipy(stats.norm(loc=0, scale=1))
+            ps.sonify_scipy(stats.chi2(df=3))
         """
-        return self.sonify(np.array(frequencies), duration, gain)
+        # Sample from distribution and map to frequency range
+        samples = dist.rvs(size=num_samples, random_state=self.rng)
+        # Normalize to [0, 1] using distribution's CDF, then scale to freq range
+        normalized = dist.cdf(samples)
+        min_freq, max_freq = freq_range
+        freq_samples = normalized * (max_freq - min_freq) + min_freq
+        return self.sonify(freq_samples, duration)
+
+    def sonify_mixture(self, distributions, weights=None, num_samples=100, duration=1.0):
+        """Create audio from a mixture of distributions.
+
+        Args:
+            distributions (list): List of (dist_name, params) tuples
+                e.g., [('normal', {'mean': 300, 'std': 30}),
+                       ('normal', {'mean': 600, 'std': 30})]
+            weights (list): Mixing weights (default: equal weights)
+            num_samples (int): Total number of frequency samples
+            duration (float): Duration in seconds
+
+        Returns:
+            Signal: Audio signal
+
+        Example:
+            # Bimodal distribution
+            ps.sonify_mixture([
+                ('normal', {'mean': 300, 'std': 20}),
+                ('normal', {'mean': 600, 'std': 20})
+            ])
+        """
+        if weights is None:
+            weights = [1.0 / len(distributions)] * len(distributions)
+        weights = np.array(weights) / sum(weights)  # Normalize
+
+        all_samples = []
+        for (dist_name, params), weight in zip(distributions, weights):
+            n = int(num_samples * weight)
+            if dist_name == 'normal':
+                samples = self.rng.normal(params.get('mean', 440), params.get('std', 50), n)
+            elif dist_name == 'uniform':
+                samples = self.rng.uniform(params.get('low', 220), params.get('high', 880), n)
+            elif dist_name == 'beta':
+                s = self.rng.beta(params.get('a', 2), params.get('b', 2), n)
+                low, high = params.get('freq_range', (220, 880))
+                samples = s * (high - low) + low
+            elif dist_name == 'exponential':
+                samples = self.rng.exponential(params.get('scale', 100), n) + params.get('base_freq', 200)
+            else:
+                raise ValueError(f"Unknown distribution: {dist_name}")
+            all_samples.extend(samples)
+
+        return self.sonify(np.array(all_samples), duration)
+
+    def compare(self, signal1, signal2, gap=0.3):
+        """Play two signals sequentially for comparison.
+
+        Args:
+            signal1 (Signal): First signal
+            signal2 (Signal): Second signal
+            gap (float): Silence gap between signals in seconds
+
+        Returns:
+            Signal: Combined signal with gap
+
+        Example:
+            tight = ps.sonify_normal(440, 20, num_samples=50)
+            wide = ps.sonify_normal(440, 100, num_samples=50)
+            ps.compare(tight, wide)  # Hear the difference!
+        """
+        gap_samples = int(gap * self.sample_rate)
+        silence = Signal(np.zeros(gap_samples), self.sample_rate)
+        return signal1 + silence + signal2
+
+    def sonify_clt(self, n_dice=1, rolls_per_sample=100, num_samples=100, duration=1.0):
+        """Demonstrate the Central Limit Theorem through sound.
+
+        Sum of n_dice uniform random variables approaches normal distribution.
+        With n_dice=1, sounds chaotic/uniform. As n_dice increases, sounds
+        more focused/normal around the mean.
+
+        Args:
+            n_dice (int): Number of dice to sum (higher = more normal)
+            rolls_per_sample (int): Samples per frequency point
+            num_samples (int): Number of frequency samples
+            duration (float): Duration in seconds
+
+        Returns:
+            Signal: Audio signal
+
+        Example:
+            ps.sonify_clt(n_dice=1)   # Uniform - chaotic
+            ps.sonify_clt(n_dice=10)  # More normal - focused
+            ps.sonify_clt(n_dice=30)  # Very normal - tight
+        """
+        # Each "frequency" is the mean of n_dice uniform [0,1] values
+        # Scaled to audible range
+        samples = []
+        for _ in range(num_samples):
+            dice_sum = self.rng.uniform(0, 1, n_dice).mean()
+            samples.append(dice_sum)
+
+        # Scale to frequency range (wider range for low n_dice)
+        samples = np.array(samples)
+        # Map [0, 1] to frequency range
+        min_freq, max_freq = 220, 880
+        freq_samples = samples * (max_freq - min_freq) + min_freq
+        return self.sonify(freq_samples, duration)
