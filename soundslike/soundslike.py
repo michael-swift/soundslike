@@ -425,3 +425,75 @@ class ProbabilitySounds:
         min_freq, max_freq = 220, 880
         freq_samples = samples * (max_freq - min_freq) + min_freq
         return self.sonify(freq_samples, duration)
+
+    def sonify_clt_progression(self, stages=(1, 2, 5, 10, 30), duration_each=1.0, gap=0.2):
+        """Play CLT progression: hear uniform converge to normal.
+
+        Creates a sequence demonstrating how the sum of uniform random
+        variables converges to a normal distribution as n increases.
+
+        Args:
+            stages (tuple): Values of n_dice to demonstrate
+            duration_each (float): Duration of each stage in seconds
+            gap (float): Silence between stages in seconds
+
+        Returns:
+            Signal: Combined audio of all stages
+
+        Example:
+            # Default progression: n=1,2,5,10,30
+            signal = ps.sonify_clt_progression()
+            signal.to_audio()  # Hear uniform -> normal!
+        """
+        signals = []
+        silence = Signal(np.zeros(int(gap * self.sample_rate)), self.sample_rate)
+
+        for i, n in enumerate(stages):
+            sig = self.sonify_clt(n_dice=n, num_samples=80, duration=duration_each)
+            signals.append(sig)
+            if i < len(stages) - 1:
+                signals.append(silence)
+
+        # Concatenate all
+        result = signals[0]
+        for sig in signals[1:]:
+            result = result + sig
+        return result
+
+    def sonify_lln(self, true_mean=440, sample_sizes=(5, 20, 100, 500), duration_each=0.8):
+        """Demonstrate the Law of Large Numbers through sound.
+
+        As sample size increases, the sample mean converges to the true mean.
+        Early samples sound scattered; larger samples converge to a pure tone.
+
+        Args:
+            true_mean (float): The true population mean (frequency in Hz)
+            sample_sizes (tuple): Sample sizes to demonstrate
+            duration_each (float): Duration of each stage
+
+        Returns:
+            Signal: Combined audio demonstrating convergence
+
+        Example:
+            # Hear sample mean converge to 440Hz
+            ps.sonify_lln(true_mean=440)
+        """
+        signals = []
+        gap = Signal(np.zeros(int(0.15 * self.sample_rate)), self.sample_rate)
+
+        for i, n in enumerate(sample_sizes):
+            # Generate n samples, compute running means
+            raw_samples = self.rng.normal(true_mean, 100, n)
+            # Use the sample means as frequencies (shows convergence)
+            running_means = np.cumsum(raw_samples) / np.arange(1, n + 1)
+            # Take subset to avoid too many frequencies
+            freq_samples = running_means[::max(1, n // 50)]
+            sig = self.sonify(freq_samples, duration_each)
+            signals.append(sig)
+            if i < len(sample_sizes) - 1:
+                signals.append(gap)
+
+        result = signals[0]
+        for sig in signals[1:]:
+            result = result + sig
+        return result
